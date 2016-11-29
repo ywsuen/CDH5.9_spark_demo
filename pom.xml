@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>Spark2.0Demo</groupId>
-    <artifactId>Spark2.0Demo</artifactId>
+    <groupId>CDH5.9_spark_demo</groupId>
+    <artifactId>CDH5.9_spark_demo</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
