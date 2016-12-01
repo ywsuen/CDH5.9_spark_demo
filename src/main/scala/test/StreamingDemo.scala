@@ -7,7 +7,7 @@ import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 object StreamingDemo {
   def main(args: Array[String]) = {
-    if (args.length < 2) {
+    if (args.length < 3) {
       System.err.println(
         s"""
            |Usage: DirectKafkaWordCount <brokers> <topics>
