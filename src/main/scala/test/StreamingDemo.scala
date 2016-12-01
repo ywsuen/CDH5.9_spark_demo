@@ -49,9 +49,11 @@ object StreamingDemo {
       }
       .foreachRDD { (rdd, curTime) =>
         for (o <- offsetRanges) {
+          // 可以在此处上传各个topic的偏移量到zookeeper
           println(s"${o.topic} ${o.partition} ${o.fromOffset} ${o.untilOffset}")
         }
 
+        // 输出是幂等的或是原子的
 
       }
 
