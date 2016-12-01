@@ -6,21 +6,19 @@ import org.apache.spark.streaming.kafka.{HasOffsetRanges, OffsetRange, KafkaUtil
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 object StreamingDemo {
-  val CHECK_POINT_DIRECTORY = "C:\\Users\\ThinkPad\\Desktop\\basis_configuration\\checkpoint"
-
   def main(args: Array[String]) = {
     if (args.length < 2) {
       System.err.println(
         s"""
            |Usage: DirectKafkaWordCount <brokers> <topics>
-           |  <brokers> is a list of one or more Kafka brokers
-           |  <topics> is a list of one or more kafka topics to consume from
-           |
+           |  <brokers> 以逗号分隔的kafka broker列表
+           |  <topics> 以逗号分隔的topic列表
+           |  <checkpiont dircetory> checkpoint保存路径
         """.stripMargin)
       System.exit(1)
     }
 
-    val Array(brokers, topics) = args
+    val Array(brokers, topics, checkpiontDircetory) = args
 
     // Function to create and setup a new StreamingContext
     def functionToCreateContext(): StreamingContext = {
@@ -54,15 +52,14 @@ object StreamingDemo {
         }
 
         // 输出是幂等的或是原子的
-
       }
 
-      ssc.checkpoint(CHECK_POINT_DIRECTORY) // set checkpoint directory
+      ssc.checkpoint(checkpiontDircetory) // set checkpoint directory
       ssc
     }
 
     // Get StreamingContext from checkpoint data or create a new one
-    val context = StreamingContext.getOrCreate(CHECK_POINT_DIRECTORY, functionToCreateContext)
+    val context = StreamingContext.getOrCreate(checkpiontDircetory, functionToCreateContext)
 
     // Do additional setup on context that needs to be done,
     // irrespective of whether it is being started or restarted
