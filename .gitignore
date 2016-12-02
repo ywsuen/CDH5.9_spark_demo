@@ -1,3 +1,6 @@
-.idea/
-target/
-CDH5.9_spark_demo.iml
+scala/.idea/
+scala/target/
+scala/CDH5.9_spark_demo.iml
+python/.idea/
+python/target/
+python2016/12/2/CDH5.9_spark_demo.iml
