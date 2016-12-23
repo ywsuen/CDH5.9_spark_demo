@@ -1,7 +1,9 @@
 package test
 
+import java.util.{UUID, Calendar, Date}
+
 import kafka.serializer.StringDecoder
-import org.apache.spark.SparkConf
+import org.apache.spark.{TaskContext, SparkConf}
 import org.apache.spark.streaming.kafka.{HasOffsetRanges, OffsetRange, KafkaUtils}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
@@ -10,7 +12,7 @@ object StreamingDemo {
     if (args.length < 3) {
       System.err.println(
         s"""
-           |Usage: DirectKafkaWordCount <brokers> <topics>
+           |Usage: DirectKafkaWordCount <brokers> <topics> <checkpiont dircetory>
            |  <brokers> 以逗号分隔的kafka broker列表
            |  <topics> 以逗号分隔的topic列表
            |  <checkpiont dircetory> checkpoint保存路径
@@ -22,9 +24,9 @@ object StreamingDemo {
 
     // Function to create and setup a new StreamingContext
     def functionToCreateContext(): StreamingContext = {
-      // Create context with 2 second batch interval
-      val sparkConf = new SparkConf().setAppName("StreamingDemo") //.setMaster("local[*]")
-      val ssc = new StreamingContext(sparkConf, Seconds(1)) // new context
+      // Create context with 1 second batch interval
+      val sparkConf = new SparkConf().setAppName("StreamingDemo") // .setMaster("local[*]")
+      val ssc = new StreamingContext(sparkConf, Seconds(60)) // new context
 
       // Creating dstream
       // Create direct kafka stream with brokers and topics
@@ -38,20 +40,28 @@ object StreamingDemo {
       ssc, kafkaParams, topicsSet)
 
       // Hold a reference to the current offset ranges, so it can be used downstream
-      var offsetRanges = Array[OffsetRange]()
+      var offsetRanges = List[OffsetRange]() // 使用Array()会在集群中触发ClassNoFound Exception, 这是一个bug
 
       dstream
       .transform { rdd =>
-        offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
+        offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges.toList
         rdd
       }
-      .foreachRDD { (rdd, curTime) =>
+      .foreachRDD { (rdd, time) =>
         for (o <- offsetRanges) {
           // 可以在此处上传各个topic的偏移量到zookeeper
           println(s"${o.topic} ${o.partition} ${o.fromOffset} ${o.untilOffset}")
         }
 
         // 输出是幂等的或是原子的
+        // 下为一种用事务实现精确一次语义的方法
+        rdd.foreachPartition { partitionIterator =>
+          val partitionId = TaskContext.get.partitionId()
+          val uniqueId = UUID.fromString(s"${time.milliseconds}$partitionId")
+          // use this uniqueId to transactionally commit the data in partitionIterator
+          println(new Date()+s" uniqueId:$uniqueId partitionIterator: ")
+          partitionIterator.foreach(println)
+        }
       }
 
       ssc.checkpoint(checkpiontDircetory) // set checkpoint directory
@@ -59,7 +69,7 @@ object StreamingDemo {
     }
 
     // Get StreamingContext from checkpoint data or create a new one
-    val context = StreamingContext.getOrCreate(checkpiontDircetory, functionToCreateContext)
+    val context = StreamingContext.getOrCreate(checkpiontDircetory,functionToCreateContext)
 
     // Do additional setup on context that needs to be done,
     // irrespective of whether it is being started or restarted
