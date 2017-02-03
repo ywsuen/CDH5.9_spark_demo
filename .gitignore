@@ -1,4 +1,5 @@
 scala/.idea/
+scala/out/
 scala/target/
 scala/CDH5.9_spark_demo.iml
 python/.idea/
