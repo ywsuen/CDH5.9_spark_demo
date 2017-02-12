@@ -1,6 +1,7 @@
 scala/.idea/
 scala/out/
 scala/target/
+scala/com/test/
 scala/CDH5.9_spark_demo.iml
 python/.idea/
 python/target/

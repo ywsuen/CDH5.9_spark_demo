@@ -1,4 +1,4 @@
-package test
+package com.test
 
 import java.util.{UUID, Calendar, Date}
 
@@ -32,9 +32,7 @@ object StreamingDemo {
       // Create direct kafka stream with brokers and topics
       val topicsSet = topics.split(",").toSet
       val kafkaParams = Map[String, String](("metadata.broker.list", brokers),
-        ("serializer.class", "kafka.serializer.StringEncoder"),
-        ("request.required.acks", "1"),
-        ("producer.type", "async"))
+      ("auto.offset.reset","smallest"))
 
       val dstream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
       ssc, kafkaParams, topicsSet)
